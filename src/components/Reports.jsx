@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { FileText, Printer, Download, DollarSign, Users, BookOpen, TrendingUp } from 'lucide-react';
+import { FileText, Printer, Download, DollarSign, Users, BookOpen, TrendingUp, CalendarClock } from 'lucide-react';
 
 // ── SVG Bar Chart ──────────────────────────────────────────────────────────
 const BarChart = ({ data }) => {
@@ -146,6 +146,24 @@ const Reports = ({ transactions, students, courses }) => {
     if (!dateFilter) return transactions;
     return transactions.filter(t => t.date.startsWith(dateFilter));
   }, [transactions, dateFilter]);
+
+  const revenueByCourseBars = useMemo(() => {
+    const map = {};
+    transactions.forEach(t => {
+      map[t.course] = (map[t.course] || 0) + t.amount;
+    });
+    return Object.entries(map).map(([label, value]) => ({ label, value }));
+  }, [transactions]);
+
+  const studentsByCourseDonuts = useMemo(() => {
+    const map = {};
+    students.forEach(s => {
+      const course = courses.find(c => c.id === s.courseId);
+      const label = course ? course.name : 'Otros';
+      map[label] = (map[label] || 0) + 1;
+    });
+    return Object.entries(map).map(([label, value]) => ({ label, value }));
+  }, [students, courses]);
 
   const handleExport = (courseId) => {
     let list = students;
