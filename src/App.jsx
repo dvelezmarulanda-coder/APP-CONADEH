@@ -26,8 +26,8 @@ const INITIAL_STUDENTS = [
 ];
 
 const INITIAL_TRANSACTIONS = [
-  { id: 'CON-10023', date: new Date().toLocaleString(), student: 'Marta Ríos', course: 'Derechos Humanos Básicos', method: 'Efectivo', amount: 500000 },
-  { id: 'CON-10024', date: new Date().toLocaleString(), student: 'Jorge Pinto', course: 'Gestión Pública y Ciudadanía', method: 'Transferencia', amount: 750000 },
+  { id: 'CON-10023', date: new Date().toISOString(), student: 'Marta Ríos', course: 'Derechos Humanos Básicos', method: 'Efectivo', amount: 500000 },
+  { id: 'CON-10024', date: new Date().toISOString(), student: 'Jorge Pinto', course: 'Gestión Pública y Ciudadanía', method: 'Transferencia', amount: 750000 },
 ];
 
 // ── BrandLogo ────────────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
     const selectedCourse = courses.find(c => c.id === courseIdInt);
     if (!selectedCourse) return;
     const now = new Date();
-    const formattedRegDate = `${now.toISOString().split('T')[0]} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+    const formattedRegDate = `${now.toISOString().split('T')[0]} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     const amountNum = parseFloat(form.amount) || 0;
     const newStudent = {
       id: Date.now(), name: form.name, email: form.email, phone: form.phone,
@@ -56,7 +56,7 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
     };
     const newTx = {
       id: `CON-${Math.floor(Math.random() * 90000) + 10000}`,
-      date: now.toLocaleString(), student: form.name, course: selectedCourse.name,
+      date: now.toISOString(), student: form.name, course: selectedCourse.name,
       method: form.method, amount: amountNum, balance: selectedCourse.price - amountNum
     };
     onSuccess(newStudent, newTx, selectedCourse.id);
@@ -175,7 +175,7 @@ const Payments = ({ students, setStudents, courses, setTransactions, setLastTx, 
     setStudents(prev => prev.map(s => s.id === studentId
       ? { ...s, status: 'Al día', dueDate: new Date(Date.now() + 30 * 864e5).toISOString().split('T')[0], isRenewed: true }
       : s));
-    const tx = { id: `REN-${Math.floor(Math.random() * 90000) + 10000}`, date: new Date().toLocaleString(), student: student.name, course: course?.name || 'Curso General', method: 'Efectivo/Sistema', amount, balance: 0 };
+    const tx = { id: `REN-${Math.floor(Math.random() * 90000) + 10000}`, date: new Date().toISOString(), student: student.name, course: course?.name || 'Curso General', method: 'Efectivo/Sistema', amount, balance: 0 };
     setTransactions(prev => [tx, ...prev]);
     setLastTx(tx);
     setShowTicket(true);
@@ -306,7 +306,7 @@ const RevenueModal = ({ transactions, onClose }) => {
   const byCoure = useMemo(() => {
     const map = {};
     transactions.forEach(t => { map[t.course] = (map[t.course] || 0) + t.amount; });
-    return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a,b) => b.total - a.total);
+    return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total);
   }, [transactions]);
 
   return (

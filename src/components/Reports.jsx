@@ -26,7 +26,7 @@ const BarChart = ({ data }) => {
         const x = PAD + slotW * i + slotW / 2 - barW / 2;
         const barH = (d.value / max) * H;
         const y = PAD + H - barH;
-        const colors = ['#1d4ed8','#059669','#7c3aed','#d97706','#db2777','#0891b2'];
+        const colors = ['#1d4ed8', '#059669', '#7c3aed', '#d97706', '#db2777', '#0891b2'];
         const color = colors[i % colors.length];
         return (
           <g key={d.label}>
@@ -47,7 +47,7 @@ const BarChart = ({ data }) => {
 // ── SVG Donut Chart ────────────────────────────────────────────────────────
 const DonutChart = ({ data }) => {
   const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  const colors = ['#1d4ed8','#059669','#7c3aed','#d97706','#db2777','#0891b2'];
+  const colors = ['#1d4ed8', '#059669', '#7c3aed', '#d97706', '#db2777', '#0891b2'];
   let cumAngle = -Math.PI / 2;
   const R = 70, r = 42, cx = 90, cy = 90;
 
@@ -102,7 +102,7 @@ const ExportModal = ({ courses, onClose, onExport }) => {
 
         <div className="space-y-4 mb-8">
           <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block text-left pl-2">Filtrar por Programa</label>
-          <select 
+          <select
             className="w-full p-4 bg-slate-100 rounded-2xl border-none outline-none focus:ring-2 focus:ring-blue-700 font-bold text-slate-700 text-sm"
             value={selectedCourse}
             onChange={(e) => setSelectedCourse(e.target.value)}
@@ -114,7 +114,7 @@ const ExportModal = ({ courses, onClose, onExport }) => {
 
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-3.5 bg-slate-100 rounded-2xl font-black text-slate-600 hover:bg-slate-200 transition-all text-sm">Cancelar</button>
-          <button 
+          <button
             onClick={() => onExport(selectedCourse)}
             className="flex-1 py-3.5 bg-blue-700 text-white rounded-2xl font-black hover:bg-blue-800 transition-all text-sm shadow-lg shadow-blue-100"
           >
@@ -131,17 +131,16 @@ const Reports = ({ transactions, students, courses }) => {
   const [dateFilter, setDateFilter] = useState('');
   const [showExportModal, setShowExportModal] = useState(false);
 
-  const totalRevenue = useMemo(() => transactions.reduce((s, t) => s + t.amount, 0), [transactions]);
-
-  const revenueByCourseBars = useMemo(() => {
-    const map = {};
-    transactions.forEach(t => { map[t.course] = (map[t.course] || 0) + t.amount; });
-    return Object.entries(map).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+  const { recaudoHoy, recaudoAyer } = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 864e5).toISOString().split('T')[0];
+    let hoy = 0, ayer = 0;
+    transactions.forEach(t => {
+      if (t.date.startsWith(today)) hoy += t.amount;
+      else if (t.date.startsWith(yesterday)) ayer += t.amount;
+    });
+    return { recaudoHoy: hoy, recaudoAyer: ayer };
   }, [transactions]);
-
-  const studentsByCourseDonuts = useMemo(() =>
-    courses.map(c => ({ label: c.name, value: students.filter(s => s.courseId === c.id).length })),
-    [courses, students]);
 
   const filteredTx = useMemo(() => {
     if (!dateFilter) return transactions;
@@ -186,30 +185,38 @@ const Reports = ({ transactions, students, courses }) => {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-gradient-to-br from-blue-700 to-blue-900 text-white p-5 md:p-7 rounded-[2rem] shadow-xl shadow-blue-200">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><DollarSign size={20}/></div>
-            <p className="text-blue-200 text-[10px] font-black uppercase tracking-widest">Total Recaudado</p>
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><DollarSign size={20} /></div>
+            <p className="text-blue-200 text-[10px] font-black uppercase tracking-widest leading-none">Cierre de <br /> Hoy</p>
           </div>
-          <h3 className="text-3xl font-black">$ {totalRevenue.toLocaleString('es-CO')}</h3>
-          <p className="text-blue-300 text-[10px] font-bold mt-1">{transactions.length} transacciones</p>
+          <h3 className="text-2xl md:text-3xl font-black">$ {recaudoHoy.toLocaleString('es-CO')}</h3>
+          <p className="text-blue-300 text-[10px] font-bold mt-1">Recaudo del día</p>
         </div>
-        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-5 md:p-7 rounded-[2rem] shadow-xl shadow-emerald-200">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-900 text-white p-5 md:p-7 rounded-[2rem] shadow-xl shadow-slate-200">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><Users size={20}/></div>
-            <p className="text-emerald-200 text-[10px] font-black uppercase tracking-widest">Total Alumnos</p>
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><CalendarClock size={20} /></div>
+            <p className="text-slate-200 text-[10px] font-black uppercase tracking-widest leading-none">Cierre de <br /> Ayer</p>
           </div>
-          <h3 className="text-3xl font-black">{students.length}</h3>
-          <p className="text-emerald-300 text-[10px] font-bold mt-1">{students.filter(s => s.status === 'Al día').length} al día</p>
+          <h3 className="text-2xl md:text-3xl font-black text-slate-100">$ {recaudoAyer.toLocaleString('es-CO')}</h3>
+          <p className="text-slate-400 text-[10px] font-bold mt-1">Caja anterior</p>
         </div>
-        <div className="bg-gradient-to-br from-violet-600 to-violet-900 text-white p-5 md:p-7 rounded-[2rem] shadow-xl shadow-violet-200">
+        <div className="bg-white p-5 md:p-7 rounded-[2rem] border border-slate-100 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><BookOpen size={20}/></div>
-            <p className="text-violet-200 text-[10px] font-black uppercase tracking-widest">Programas Activos</p>
+            <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center"><Users size={20} className="text-emerald-600" /></div>
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none">Total <br /> Alumnos</p>
           </div>
-          <h3 className="text-3xl font-black">{courses.length}</h3>
-          <p className="text-violet-300 text-[10px] font-bold mt-1">en oferta académica</p>
+          <h3 className="text-2xl md:text-3xl font-black text-slate-800">{students.length}</h3>
+          <p className="text-emerald-500 text-[10px] font-bold mt-1">{students.filter(s => s.status === 'Al día').length} activos</p>
+        </div>
+        <div className="bg-white p-5 md:p-7 rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center"><TrendingUp size={20} className="text-violet-600" /></div>
+            <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest leading-none">Total <br /> Recaudado</p>
+          </div>
+          <h3 className="text-2xl md:text-3xl font-black text-slate-800">$ {transactions.reduce((s, t) => s + t.amount, 0).toLocaleString('es-CO')}</h3>
+          <p className="text-slate-400 text-[10px] font-bold mt-1">Acumulado histórico</p>
         </div>
       </div>
 
@@ -244,7 +251,7 @@ const Reports = ({ transactions, students, courses }) => {
               placeholder="Filtrar por fecha"
             />
             <button onClick={() => window.print()} className="bg-slate-900 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 font-black text-xs uppercase hover:bg-black transition-all">
-              <Printer size={15}/> Imprimir
+              <Printer size={15} /> Imprimir
             </button>
           </div>
         </div>
@@ -269,7 +276,9 @@ const Reports = ({ transactions, students, courses }) => {
                   <td className="px-8 py-4">
                     <span className="px-3 py-1 bg-slate-100 rounded-lg text-[9px] font-black uppercase text-slate-600">{tx.method}</span>
                   </td>
-                  <td className="px-8 py-4 text-[10px] text-slate-400 font-bold">{tx.date}</td>
+                  <td className="px-8 py-4 text-[10px] text-slate-400 font-bold">
+                    {tx.date.includes('T') ? new Date(tx.date).toLocaleString() : tx.date}
+                  </td>
                   <td className="px-8 py-4 text-right font-black text-emerald-600">+$ {tx.amount.toLocaleString('es-CO')}</td>
                 </tr>
               ))}
@@ -284,21 +293,21 @@ const Reports = ({ transactions, students, courses }) => {
       {/* Export Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <button onClick={() => window.print()} className="bg-slate-900 text-white p-5 md:p-7 rounded-[2.5rem] flex items-center gap-4 hover:bg-black transition-all shadow-xl">
-          <Printer size={28}/> <span className="font-black text-sm uppercase tracking-widest">Imprimir Reporte Financiero</span>
+          <Printer size={28} /> <span className="font-black text-sm uppercase tracking-widest">Imprimir Reporte Financiero</span>
         </button>
-        <button 
+        <button
           onClick={() => setShowExportModal(true)}
           className="bg-blue-700 text-white p-5 md:p-7 rounded-[2.5rem] flex items-center gap-4 hover:bg-blue-800 transition-all shadow-xl shadow-blue-100"
         >
-          <Download size={28}/> <span className="font-black text-sm uppercase tracking-widest">Exportar Listado Alumnos</span>
+          <Download size={28} /> <span className="font-black text-sm uppercase tracking-widest">Exportar Listado Alumnos</span>
         </button>
       </div>
 
       {showExportModal && (
-        <ExportModal 
-          courses={courses} 
-          onClose={() => setShowExportModal(false)} 
-          onExport={handleExport} 
+        <ExportModal
+          courses={courses}
+          onClose={() => setShowExportModal(false)}
+          onExport={handleExport}
         />
       )}
     </div>
