@@ -21,7 +21,7 @@ const EditCourseModal = ({ course, onSave, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-10 relative animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-6 sm:p-10 relative animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
         <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500 rounded-t-[3rem]" />
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-black text-slate-800 tracking-tighter">Editar Programa</h2>
@@ -72,7 +72,7 @@ const EditCourseModal = ({ course, onSave, onClose }) => {
 // ── Delete Confirm ──────────────────────────────────────────────────────────
 const DeleteCourseConfirm = ({ course, studentCount, onConfirm, onClose }) => (
   <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-10 text-center animate-in zoom-in duration-200">
+    <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-6 sm:p-10 text-center animate-in zoom-in duration-200">
       <div className="w-20 h-20 bg-red-100 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
         <Trash2 size={36} className="text-red-500" />
       </div>
@@ -117,7 +117,7 @@ const AddCourseModal = ({ onSave, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-12 animate-in zoom-in duration-200 relative overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-[3rem] w-full max-w-xl shadow-2xl p-6 sm:p-12 animate-in zoom-in duration-200 relative overflow-hidden max-h-[90vh] overflow-y-auto">
         <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500" />
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-black text-slate-800 tracking-tighter">Crear Programa</h2>
@@ -209,7 +209,7 @@ const Courses = ({ courses, setCourses, students }) => {
             const textColor = course.color.replace('bg-', 'text-');
             const enrolled = students.filter(s => s.courseId === course.id).length;
             return (
-              <div key={course.id} className="bg-white rounded-[2.5rem] border border-slate-100 p-8 hover:shadow-xl transition-all group relative">
+              <div key={course.id} className="bg-white rounded-[2.5rem] border border-slate-100 p-6 md:p-8 hover:shadow-xl transition-all group relative">
                 {/* Action Buttons */}
                 <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => setEditing(course)}

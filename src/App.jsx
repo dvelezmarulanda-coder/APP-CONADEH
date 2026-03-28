@@ -64,7 +64,7 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-10 animate-in zoom-in duration-200 relative">
+      <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-6 sm:p-10 animate-in zoom-in duration-200 relative">
         <div className="absolute top-0 left-0 w-full h-2 bg-blue-700 rounded-t-[3rem]" />
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-black text-slate-800 tracking-tighter">Nueva Matrícula</h2>
@@ -127,7 +127,7 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
 // ── Ticket Modal ─────────────────────────────────────────────────────────────
 const TicketModal = ({ tx, onClose, logoError, onLogoError }) => (
   <div className="fixed inset-0 bg-blue-950/80 backdrop-blur-lg z-50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-10 text-center animate-in slide-in-from-bottom duration-300">
+    <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-6 sm:p-10 text-center animate-in slide-in-from-bottom duration-300">
       <div id="printable-ticket" className="p-8 border-2 border-slate-50 rounded-[2.5rem] mb-8 bg-slate-50/50">
         <BrandLogo className="w-20 h-20 mx-auto mb-4" hasError={logoError} onError={onLogoError} />
         <h3 className="font-black text-2xl tracking-tighter text-blue-800 uppercase">{APP_NAME}</h3>
@@ -183,7 +183,7 @@ const Payments = ({ students, setStudents, courses, setTransactions, setLastTx, 
 
   return (
     <div className="space-y-6 animate-in slide-in-from-bottom duration-300">
-      <div className="bg-blue-900 text-white p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-blue-100">
+      <div className="bg-blue-900 text-white p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-blue-100">
         <div className="flex items-center gap-6">
           <AlertCircle size={40} className="text-blue-300 shrink-0" />
           <div>
@@ -199,12 +199,12 @@ const Payments = ({ students, setStudents, courses, setTransactions, setLastTx, 
       </div>
       <div className="grid grid-cols-1 gap-4">
         {filtered.length === 0 && (
-          <div className="bg-white p-12 rounded-[2.5rem] border border-slate-100 text-center">
+          <div className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-slate-100 text-center">
             <p className="text-slate-400 font-bold">No se encontraron estudiantes pendientes.</p>
           </div>
         )}
         {filtered.map(s => (
-          <div key={s.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row justify-between items-center group hover:border-blue-200 transition-all">
+          <div key={s.id} className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row justify-between items-center group hover:border-blue-200 transition-all">
             <div className="flex items-center gap-6">
               <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-blue-700 text-2xl border border-slate-100 group-hover:bg-blue-700 group-hover:text-white transition-all">
                 {s.name.charAt(0)}
@@ -241,7 +241,7 @@ const Dashboard = ({ courses, students, transactions, setActiveTab, setShowReven
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div onClick={() => setShowRevenue(true)}
-          className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group relative overflow-hidden">
+          className="bg-white p-6 md:p-7 rounded-[2rem] shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group relative overflow-hidden">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Recaudo Total</p>
@@ -253,18 +253,18 @@ const Dashboard = ({ courses, students, transactions, setActiveTab, setShowReven
           </div>
           <div className="text-[10px] font-bold text-blue-600 mt-4 flex items-center gap-1">Ver desglose <ChevronRight size={12} /></div>
         </div>
-        <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100">
+        <div className="bg-white p-6 md:p-7 rounded-[2rem] shadow-sm border border-slate-100">
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Estudiantes Activos</p>
           <h3 className="text-4xl font-black text-slate-800 mt-1">{students.length}</h3>
         </div>
-        <div className="bg-white p-7 rounded-[2rem] shadow-sm border border-slate-100">
+        <div className="bg-white p-6 md:p-7 rounded-[2rem] shadow-sm border border-slate-100">
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Alertas de Pago</p>
           <h3 className="text-4xl font-black text-red-500 mt-1">{overdue}</h3>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
+        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
           <h3 className="font-black text-lg mb-8 text-slate-700 flex items-center gap-2">
             <TrendingUp className="text-blue-600" size={20} /> OCUPACIÓN POR PROGRAMA
           </h3>
@@ -285,7 +285,7 @@ const Dashboard = ({ courses, students, transactions, setActiveTab, setShowReven
             })}
           </div>
         </div>
-        <div className="bg-blue-800 rounded-[2.5rem] p-10 text-white relative overflow-hidden shadow-2xl shadow-blue-200 flex flex-col justify-center">
+        <div className="bg-blue-800 rounded-[2.5rem] p-6 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-blue-200 flex flex-col justify-center">
           <div className="relative z-10">
             <h3 className="text-3xl font-black mb-4 leading-tight">Módulo de Reportes<br />Institucionales</h3>
             <p className="opacity-70 text-sm mb-8 max-w-xs font-medium italic">Acceso restringido para personal administrativo del CONADEH.</p>
@@ -311,7 +311,7 @@ const RevenueModal = ({ transactions, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-4xl shadow-2xl p-10 animate-in zoom-in duration-200 relative max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-[3rem] w-full max-w-4xl shadow-2xl p-6 lg:p-10 animate-in zoom-in duration-200 relative max-h-[90vh] flex flex-col">
         <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500 rounded-t-[3rem]" />
         <div className="flex justify-between items-center mb-8 shrink-0">
           <div>
@@ -431,17 +431,18 @@ const App = () => {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 lg:ml-64 overflow-y-auto min-h-screen">
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-20">
-          <h1 className="text-xl font-black text-slate-800 uppercase tracking-tight">{PAGE_TITLES[activeTab]}</h1>
+      <main className="flex-1 lg:ml-64 overflow-y-auto min-h-screen pb-24 lg:pb-8">
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-20">
+          <h1 className="text-xl font-black text-slate-800 uppercase tracking-tight truncate mr-2">{PAGE_TITLES[activeTab]}</h1>
           <button onClick={() => setShowRegistration(true)}
-            className="bg-blue-800 hover:bg-blue-900 text-white px-6 py-2.5 rounded-xl flex items-center space-x-2 transition-all shadow-xl shadow-blue-100 font-bold text-sm">
+            className="bg-blue-800 hover:bg-blue-900 text-white px-4 md:px-6 py-2.5 rounded-xl flex items-center space-x-2 transition-all shadow-xl shadow-blue-100 font-bold text-sm shrink-0">
             <PlusCircle size={18} />
-            <span>Nueva Matrícula</span>
+            <span className="hidden sm:inline">Nueva Matrícula</span>
+            <span className="sm:hidden">Nuevo</span>
           </button>
         </header>
 
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto">
           {activeTab === 'dashboard' && (
             <Dashboard courses={courses} students={students} transactions={transactions}
               setActiveTab={setActiveTab} setShowRevenue={setShowRevenue} />
@@ -470,6 +471,24 @@ const App = () => {
       {showTicket && lastTx && (
         <TicketModal tx={lastTx} onClose={() => setShowTicket(false)} logoError={logoError} onLogoError={() => setLogoError(true)} />
       )}
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center h-20 px-2 z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        {navItems.map(item => (
+          <button key={item.id} onClick={() => setActiveTab(item.id)}
+            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${activeTab === item.id ? 'text-blue-700' : 'text-slate-400'}`}>
+            <div className="relative">
+              <item.Icon size={24} strokeWidth={activeTab === item.id ? 2.5 : 2} />
+              {item.count > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white">
+                  {item.count}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] font-bold">{item.label}</span>
+          </button>
+        ))}
+      </nav>
 
       <style>{`
         @media print {

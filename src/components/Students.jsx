@@ -25,7 +25,7 @@ const EditStudentModal = ({ student, courses, onSave, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-10 relative animate-in zoom-in duration-200">
+      <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-6 sm:p-10 relative animate-in zoom-in duration-200">
         <div className="absolute top-0 left-0 w-full h-2 bg-blue-700 rounded-t-[3rem]" />
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-black text-slate-800 tracking-tighter">Editar Estudiante</h2>
@@ -84,7 +84,7 @@ const EditStudentModal = ({ student, courses, onSave, onClose }) => {
 // ── Delete Confirm ──────────────────────────────────────────────────────────
 const DeleteConfirm = ({ student, onConfirm, onClose }) => (
   <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-10 text-center animate-in zoom-in duration-200">
+    <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-6 sm:p-10 text-center animate-in zoom-in duration-200">
       <div className="w-20 h-20 bg-red-100 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
         <Trash2 size={36} className="text-red-500" />
       </div>
@@ -126,7 +126,7 @@ const Students = ({ students, setStudents, courses }) => {
   return (
     <>
       <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden animate-in fade-in duration-300">
-        <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="p-5 md:p-8 border-b border-slate-50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-wrap">
             <h2 className="font-black text-xl text-slate-800">Directorio General</h2>
             <select

@@ -92,7 +92,7 @@ const ExportModal = ({ courses, onClose, onExport }) => {
 
   return (
     <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-10 text-center animate-in zoom-in duration-200 relative overflow-hidden">
+      <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-6 sm:p-10 text-center animate-in zoom-in duration-200 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-2 bg-blue-700" />
         <div className="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
           <Download size={36} className="text-blue-700" />
@@ -159,16 +159,17 @@ const Reports = ({ transactions, students, courses }) => {
       fileName = `listado-${courseName.toLowerCase().replace(/\s+/g, '-')}.csv`;
     }
 
-    const headers = ["ID", "Nombre", "Email", "Telefono", "Programa", "Estado", "Fecha Ingreso"];
-    const rows = list.map(s => [
-      s.id,
-      s.name,
-      s.email || 'N/A',
-      s.phone || 'N/A',
-      courses.find(c => c.id === s.courseId)?.name || 'N/A',
-      s.status,
-      s.registrationDate
-    ]);
+    const headers = ["Nombre", "Apellido", "Correo Electrónico"];
+    const rows = list.map(s => {
+      const nameParts = s.name.trim().split(' ');
+      const firstName = nameParts[0] || 'N/A';
+      const lastName = nameParts.slice(1).join(' ') || 'N/A';
+      return [
+        firstName,
+        lastName,
+        s.email || 'N/A'
+      ];
+    });
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -186,7 +187,7 @@ const Reports = ({ transactions, students, courses }) => {
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-blue-700 to-blue-900 text-white p-7 rounded-[2rem] shadow-xl shadow-blue-200">
+        <div className="bg-gradient-to-br from-blue-700 to-blue-900 text-white p-5 md:p-7 rounded-[2rem] shadow-xl shadow-blue-200">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><DollarSign size={20}/></div>
             <p className="text-blue-200 text-[10px] font-black uppercase tracking-widest">Total Recaudado</p>
@@ -194,7 +195,7 @@ const Reports = ({ transactions, students, courses }) => {
           <h3 className="text-3xl font-black">$ {totalRevenue.toLocaleString('es-CO')}</h3>
           <p className="text-blue-300 text-[10px] font-bold mt-1">{transactions.length} transacciones</p>
         </div>
-        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-7 rounded-[2rem] shadow-xl shadow-emerald-200">
+        <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 text-white p-5 md:p-7 rounded-[2rem] shadow-xl shadow-emerald-200">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><Users size={20}/></div>
             <p className="text-emerald-200 text-[10px] font-black uppercase tracking-widest">Total Alumnos</p>
@@ -202,7 +203,7 @@ const Reports = ({ transactions, students, courses }) => {
           <h3 className="text-3xl font-black">{students.length}</h3>
           <p className="text-emerald-300 text-[10px] font-bold mt-1">{students.filter(s => s.status === 'Al día').length} al día</p>
         </div>
-        <div className="bg-gradient-to-br from-violet-600 to-violet-900 text-white p-7 rounded-[2rem] shadow-xl shadow-violet-200">
+        <div className="bg-gradient-to-br from-violet-600 to-violet-900 text-white p-5 md:p-7 rounded-[2rem] shadow-xl shadow-violet-200">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center"><BookOpen size={20}/></div>
             <p className="text-violet-200 text-[10px] font-black uppercase tracking-widest">Programas Activos</p>
@@ -214,7 +215,7 @@ const Reports = ({ transactions, students, courses }) => {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="bg-white p-5 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
           <h3 className="font-black text-sm uppercase text-slate-400 tracking-widest mb-6 flex items-center gap-2">
             <TrendingUp size={16} className="text-blue-600" /> Ingresos por Programa
           </h3>
@@ -222,7 +223,7 @@ const Reports = ({ transactions, students, courses }) => {
             ? <BarChart data={revenueByCourseBars} />
             : <p className="text-slate-400 text-sm text-center py-10 font-bold">Sin transacciones registradas</p>}
         </div>
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="bg-white p-5 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
           <h3 className="font-black text-sm uppercase text-slate-400 tracking-widest mb-6 flex items-center gap-2">
             <Users size={16} className="text-emerald-600" /> Distribución de Alumnos
           </h3>
@@ -232,7 +233,7 @@ const Reports = ({ transactions, students, courses }) => {
 
       {/* Transactions Table */}
       <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="p-5 md:p-8 border-b border-slate-50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h3 className="font-black text-lg text-slate-800">Registro de Transacciones</h3>
           <div className="flex items-center gap-3">
             <input
@@ -282,12 +283,12 @@ const Reports = ({ transactions, students, courses }) => {
 
       {/* Export Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <button onClick={() => window.print()} className="bg-slate-900 text-white p-7 rounded-[2.5rem] flex items-center gap-4 hover:bg-black transition-all shadow-xl">
+        <button onClick={() => window.print()} className="bg-slate-900 text-white p-5 md:p-7 rounded-[2.5rem] flex items-center gap-4 hover:bg-black transition-all shadow-xl">
           <Printer size={28}/> <span className="font-black text-sm uppercase tracking-widest">Imprimir Reporte Financiero</span>
         </button>
         <button 
           onClick={() => setShowExportModal(true)}
-          className="bg-blue-700 text-white p-7 rounded-[2.5rem] flex items-center gap-4 hover:bg-blue-800 transition-all shadow-xl shadow-blue-100"
+          className="bg-blue-700 text-white p-5 md:p-7 rounded-[2.5rem] flex items-center gap-4 hover:bg-blue-800 transition-all shadow-xl shadow-blue-100"
         >
           <Download size={28}/> <span className="font-black text-sm uppercase tracking-widest">Exportar Listado Alumnos</span>
         </button>
