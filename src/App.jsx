@@ -22,6 +22,35 @@ const BrandLogo = ({ className, onError, hasError }) => {
   return <img src="/logo.png" alt="CONADEH" className={`${className} object-contain`} onError={onError} />;
 };
 
+// 🧾 POS Receipt Component 🧾
+const POSReceipt = ({ data }) => {
+  if (!data) return null;
+  return (
+    <div className="print-area hidden text-slate-900 font-mono text-[10px] bg-white p-2">
+      <div className="text-center border-b border-dashed border-slate-300 pb-3 mb-3">
+        <h2 className="text-sm font-black tracking-tight">CONADEH</h2>
+        <p className="text-[8px] uppercase font-bold">Comprobante de Pago</p>
+        <p className="mt-1">Nº {data.id}</p>
+        <p>{new Date(data.date).toLocaleString()}</p>
+      </div>
+      <div className="space-y-1.5 mb-4">
+        <div className="flex justify-between"><span>ESTUDIANTE:</span> <span className="font-bold text-right">{data.student}</span></div>
+        <div className="flex justify-between"><span>CONCEPTO:</span> <span className="font-bold text-right">{data.course}</span></div>
+        <div className="flex justify-between"><span>MÉTODO:</span> <span className="font-bold text-right">{data.method}</span></div>
+      </div>
+      <div className="border-t border-b border-dashed border-slate-300 py-3 flex justify-between font-black text-xs">
+        <span>TOTAL PAGADO:</span>
+        <span>$ {data.amount?.toLocaleString()}</span>
+      </div>
+      <div className="text-center mt-8 text-[7px] space-y-1">
+        <p className="font-bold uppercase">¡GRACIAS POR SU CONFIANZA!</p>
+        <p>Este es un soporte interno de pago</p>
+        <p>CONADEH - Educación Institucional</p>
+      </div>
+    </div>
+  );
+};
+
 // 📝 Registration Modal 📝
 const RegistrationModal = ({ courses, onClose, onSuccess }) => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', courseId: '', method: 'Efectivo', amount: '' });
@@ -173,6 +202,14 @@ const App = () => {
   const [showRegModal, setShowRegModal] = useState(false);
   const [imgError, setImgError] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [latestTx, setLatestTx] = useState(null);
+
+  const printReceipt = (tx) => {
+    setLatestTx(tx);
+    setTimeout(() => {
+      window.print();
+    }, 500);
+  };
 
   const stats = useMemo(() => {
     const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
@@ -192,6 +229,7 @@ const App = () => {
     const { data: txData } = await supabase.from('transactions').insert([newTransaction]).select();
     if (txData && txData.length > 0) {
       setTransactions(prev => [...prev, txData[0]]);
+      printReceipt(txData[0]);
     }
     
     setShowRegModal(false);
@@ -222,6 +260,7 @@ const App = () => {
     const { data: txData } = await supabase.from('transactions').insert([newTransaction]).select();
     if (txData && txData.length > 0) {
       setTransactions(prev => [...prev, txData[0]]);
+      printReceipt(txData[0]);
     }
   };
 
@@ -243,7 +282,8 @@ const App = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark' : ''} transition-colors duration-500`}>
-      <div className="min-h-screen bg-bg-main dark:bg-bg-main text-slate-800 dark:text-text-main flex flex-col md:flex-row font-sans selection:bg-primary/30">
+      <POSReceipt data={latestTx} />
+      <div className="min-h-screen bg-bg-main dark:bg-bg-main text-slate-800 dark:text-text-main flex flex-col md:flex-row font-sans selection:bg-primary/30 print:hidden">
 
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-80 bg-white dark:bg-bg-card border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 p-8 flex flex-col z-40 transition-colors duration-500">
