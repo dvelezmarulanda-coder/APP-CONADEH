@@ -34,9 +34,10 @@ const POSReceipt = ({ data }) => {
         <p>{new Date(data.date).toLocaleString()}</p>
       </div>
       <div className="space-y-1.5 mb-4">
-        <div className="flex justify-between"><span>ESTUDIANTE:</span> <span className="font-bold text-right">{data.student}</span></div>
-        <div className="flex justify-between"><span>CONCEPTO:</span> <span className="font-bold text-right">{data.course}</span></div>
-        <div className="flex justify-between"><span>MÉTODO:</span> <span className="font-bold text-right">{data.method}</span></div>
+        <div className="flex justify-between"><span>CONCEPTO:</span> <span className="font-bold text-right uppercase">{data.type}</span></div>
+        <div className="flex justify-between"><span>ESTUDIANTE:</span> <span className="font-bold text-right uppercase">{data.student}</span></div>
+        <div className="flex justify-between"><span>CURSO:</span> <span className="font-bold text-right uppercase">{data.course}</span></div>
+        <div className="flex justify-between"><span>MÉTODO:</span> <span className="font-bold text-right uppercase">{data.method}</span></div>
       </div>
       <div className="border-t border-b border-dashed border-slate-300 py-3 flex justify-between font-black text-xs">
         <span>TOTAL PAGADO:</span>
@@ -82,7 +83,7 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
       course: selectedCourse.name,
       method: form.method,
       amount: amountNum,
-      type: 'Ingreso',
+      type: 'Inscripción',
       isClosed: false
     };
 
@@ -254,7 +255,7 @@ const App = () => {
       course: course?.name || 'N/A',
       method,
       amount,
-      type: 'Ingreso',
+      type: 'Mensualidad',
       isClosed: false,
     };
     const { data: txData } = await supabase.from('transactions').insert([newTransaction]).select();

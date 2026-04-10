@@ -351,7 +351,11 @@ const Reports = ({ transactions, students, courses, onCloseDay }) => {
               {filteredTx.map(tx => (
                 <tr key={tx.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="px-8 py-4">
-                    <span className={`px-2 py-1 rounded-md text-[8px] font-black uppercase ${tx.type === 'Ingreso' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+                    <span className={`px-2 py-1 rounded-md text-[8px] font-black uppercase ${
+                      tx.type === 'Inscripción' ? 'bg-emerald-100 text-emerald-700' : 
+                      tx.type === 'Mensualidad' ? 'bg-violet-100 text-violet-700' : 
+                      'bg-slate-100 text-slate-700'
+                    }`}>
                       {tx.type}
                     </span>
                   </td>
