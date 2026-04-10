@@ -2,43 +2,30 @@ import React, { useState, useMemo } from 'react';
 import {
   LayoutDashboard, Users, BookOpen, CalendarClock,
   TrendingUp, PlusCircle, ChevronRight, DollarSign,
-  Printer, X, Search, FileText, AlertCircle, ShieldCheck, Phone
+  Printer, X, Search, FileText, AlertCircle, ShieldCheck, Phone,
+  Sun, Moon
 } from 'lucide-react';
 
 import Courses from './components/Courses';
 import Students from './components/Students';
 import Reports from './components/Reports';
 
-// ── Constants ───────────────────────────────────────────────────────────────
 const APP_NAME = "CONADEH";
 
-const INITIAL_COURSES = [
-  { id: 1, name: 'Derechos Humanos Básicos', students: 45, color: 'bg-blue-700', price: 1500000, teacher: 'Dr. Roberto Sosa', startDate: '2024-01-15', endDate: '2024-06-15', spots: 50, location: 'Sede Central' },
-  { id: 2, name: 'Gestión Pública y Ciudadanía', students: 30, color: 'bg-blue-600', price: 1200000, teacher: 'Lic. Elena Soler', startDate: '2024-02-01', endDate: '2024-05-01', spots: 40, location: 'Sede Regional' },
-  { id: 3, name: 'Mediación de Conflictos', students: 25, color: 'bg-blue-900', price: 1350000, teacher: 'Abg. Marcos Ruiz', startDate: '2024-01-20', endDate: '2024-07-20', spots: 30, location: 'Virtual' },
-];
+const generateId = (prefix = "CON") => `${prefix}-${Math.floor(Math.random() * 90000) + 10000}`;
 
-const INITIAL_STUDENTS = [
-  { id: 101, name: 'Carlos Mendoza', email: 'carlos@mail.com', phone: '310 123 4567', courseId: 1, status: 'Al día', dueDate: '2024-04-20', registrationDate: '2024-03-01 10:30' },
-  { id: 102, name: 'Ana Beltrán', email: 'ana@mail.com', phone: '315 987 6543', courseId: 2, status: 'Vencido', dueDate: '2024-03-10', registrationDate: '2024-02-15 09:15' },
-  { id: 103, name: 'Luis Ortega', email: 'luis@mail.com', phone: '300 555 1234', courseId: 1, status: 'Por vencer', dueDate: '2024-03-28', registrationDate: '2024-03-05 14:20' },
-  { id: 104, name: 'Sofía Vega', email: 'sofia@mail.com', phone: '320 444 8888', courseId: 3, status: 'Vencido', dueDate: '2024-03-05', registrationDate: '2024-03-02 16:45' },
-];
+import { supabase } from './supabaseClient';
 
-const INITIAL_TRANSACTIONS = [
-  { id: 'CON-10023', date: new Date().toISOString(), student: 'Marta Ríos', course: 'Derechos Humanos Básicos', method: 'Efectivo', amount: 500000 },
-  { id: 'CON-10024', date: new Date().toISOString(), student: 'Jorge Pinto', course: 'Gestión Pública y Ciudadanía', method: 'Transferencia', amount: 750000 },
-];
-
-// ── BrandLogo ────────────────────────────────────────────────────────────────
+// 🏛️ BrandLogo 🏛️
 const BrandLogo = ({ className, onError, hasError }) => {
-  if (hasError) return <ShieldCheck className={`${className} text-blue-700`} />;
-  return <img src="image_6f15a4.png" alt="CONADEH" className={`${className} object-contain`} onError={onError} />;
+  if (hasError) return <ShieldCheck className={`${className} text-primary`} />;
+  return <img src="/logo.png" alt="CONADEH" className={`${className} object-contain`} onError={onError} />;
 };
 
-// ── Registration Modal ───────────────────────────────────────────────────────
+// 📝 Registration Modal 📝
 const RegistrationModal = ({ courses, onClose, onSuccess }) => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', courseId: '', method: 'Efectivo', amount: '' });
+  const selectedCourse = useMemo(() => courses.find(c => c.id === parseInt(form.courseId)), [courses, form.courseId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -46,77 +33,95 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
     const selectedCourse = courses.find(c => c.id === courseIdInt);
     if (!selectedCourse) return;
     const now = new Date();
-    const formattedRegDate = `${now.toISOString().split('T')[0]} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    const formattedRegDate = `${now.toISOString().split('T')[0]} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
     const amountNum = parseFloat(form.amount) || 0;
+
     const newStudent = {
-      id: Date.now(), name: form.name, email: form.email, phone: form.phone,
-      courseId: selectedCourse.id, status: 'Al día',
-      dueDate: new Date(Date.now() + 30 * 864e5).toISOString().split('T')[0],
-      registrationDate: formattedRegDate
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      courseId: courseIdInt,
+      status: 'Al día',
+      registrationDate: formattedRegDate,
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     };
-    const newTx = {
-      id: `CON-${Math.floor(Math.random() * 90000) + 10000}`,
-      date: now.toISOString(), student: form.name, course: selectedCourse.name,
-      method: form.method, amount: amountNum, balance: selectedCourse.price - amountNum
+
+    const newTransaction = {
+      id: generateId(),
+      date: new Date().toISOString(),
+      student: form.name,
+      course: selectedCourse.name,
+      method: form.method,
+      amount: amountNum,
+      type: 'Ingreso',
+      isClosed: false
     };
-    onSuccess(newStudent, newTx, selectedCourse.id);
+
+    onSuccess(newStudent, newTransaction);
   };
 
   return (
-    <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-lg shadow-2xl p-6 sm:p-10 animate-in zoom-in duration-200 relative">
-        <div className="absolute top-0 left-0 w-full h-2 bg-blue-700 rounded-t-[3rem]" />
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-black text-slate-800 tracking-tighter">Nueva Matrícula</h2>
-          <button onClick={onClose} className="bg-slate-50 p-2 rounded-xl text-slate-400 hover:text-slate-600 transition-colors"><X /></button>
+    <div className="fixed inset-0 bg-bg-main/80 backdrop-blur-xl z-[70] flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-bg-card rounded-[3.5rem] w-full max-w-xl shadow-2xl p-8 md:p-12 animate-in zoom-in duration-300 relative overflow-hidden border border-transparent dark:border-slate-800">
+        <div className="absolute top-0 left-0 w-full h-3 bg-primary" />
+        <div className="flex justify-between items-center mb-10">
+          <div>
+            <h3 className="text-3xl font-black text-slate-800 dark:text-text-main tracking-tighter uppercase leading-none">Inscripción</h3>
+            <p className="text-primary font-bold text-[10px] tracking-widest mt-1 uppercase">Nuevo Registro Académico</p>
+          </div>
+          <button onClick={onClose} className="bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl text-slate-400 hover:text-slate-600 transition-colors shadow-sm"><X size={24} /></button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 block mb-1">Nombre Completo</label>
-            <input required type="text" className="w-full p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-700 font-bold"
-              placeholder="Nombre completo" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-3">Nombre Completo</label>
+            <input required type="text" className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl outline-none focus:ring-4 focus:ring-primary/20 font-bold text-slate-700 dark:text-text-main transition-all"
+              placeholder="Ej: David Velez"
+              value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 block mb-1">Email</label>
-              <input type="email" className="w-full p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-700 font-bold text-sm"
-                placeholder="correo@mail.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-3">Email</label>
+              <input required type="email" className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl outline-none focus:ring-4 focus:ring-primary/20 font-bold text-slate-700 dark:text-text-main text-sm"
+                placeholder="correo@ejemplo.com"
+                value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             </div>
-            <div>
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 block mb-1">Teléfono</label>
-              <input required type="tel" className="w-full p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-700 font-bold text-sm"
-                placeholder="310 000 0000" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 block mb-1">Programa</label>
-              <select required className="w-full p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-700 font-bold text-xs"
-                value={form.courseId} onChange={e => setForm({ ...form, courseId: e.target.value })}>
-                <option value="">Elegir Programa</option>
-                {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2 block mb-1">Método Pago</label>
-              <select className="w-full p-4 bg-slate-100 rounded-2xl outline-none focus:ring-2 focus:ring-blue-700 font-bold text-xs"
-                value={form.method} onChange={e => setForm({ ...form, method: e.target.value })}>
-                <option>Efectivo</option>
-                <option>Transferencia</option>
-              </select>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-3">WhatsApp</label>
+              <input required type="tel" className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl outline-none focus:ring-4 focus:ring-primary/20 font-bold text-slate-700 dark:text-text-main text-sm"
+                placeholder="+57 300 000 0000"
+                value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             </div>
           </div>
-          <div>
-            <label className="text-[10px] font-black uppercase text-blue-600 tracking-widest pl-2 block mb-1">Abono Inicial (COP)</label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-700 font-black text-xl">$</span>
-              <input required type="number" className="w-full p-4 pl-10 bg-blue-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-700 font-mono text-2xl text-blue-800 font-black"
-                placeholder="0" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} />
-            </div>
-            <p className="text-[9px] text-slate-400 font-bold italic mt-2 text-center">La fecha de ingreso se guardará automáticamente al confirmar.</p>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-3">Programa Académico</label>
+            <select required className="w-full p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-none outline-none focus:ring-4 focus:ring-primary/20 font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px]"
+              value={form.courseId} onChange={e => setForm({ ...form, courseId: e.target.value })}>
+              <option value="">Selecciona un curso</option>
+              {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
           </div>
-          <button type="submit" className="w-full bg-blue-800 text-white py-5 rounded-[2.5rem] font-black text-lg hover:bg-blue-900 transition-all shadow-xl shadow-blue-100 uppercase tracking-widest">
-            Confirmar Registro
+
+          {selectedCourse && (
+            <div className="bg-primary/5 dark:bg-primary/10 p-6 rounded-3xl border border-primary/10 animate-in slide-in-from-top-4 duration-300">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Inversión Sugerida</span>
+                <span className="text-xs font-black text-slate-400 uppercase">COP</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <input required type="number"
+                  className="w-full bg-white dark:bg-slate-900 border-none rounded-2xl p-4 text-2xl font-black text-primary placeholder:text-primary/20 outline-none shadow-sm"
+                  placeholder={selectedCourse.registrationFee.toString()}
+                  value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })}
+                />
+              </div>
+            </div>
+          )}
+
+          <button type="submit" className="w-full bg-primary text-white py-5 rounded-[2.5rem] font-black text-lg uppercase tracking-widest hover:bg-primary-dark transition-all shadow-2xl shadow-primary/30 flex items-center justify-center gap-3">
+            <ShieldCheck size={24} /> Confirmar Registro
           </button>
         </form>
       </div>
@@ -124,381 +129,242 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
   );
 };
 
-// ── Ticket Modal ─────────────────────────────────────────────────────────────
-const TicketModal = ({ tx, onClose, logoError, onLogoError }) => (
-  <div className="fixed inset-0 bg-blue-950/80 backdrop-blur-lg z-50 flex items-center justify-center p-4">
-    <div className="bg-white rounded-[3rem] w-full max-w-sm shadow-2xl p-6 sm:p-10 text-center animate-in slide-in-from-bottom duration-300">
-      <div id="printable-ticket" className="p-8 border-2 border-slate-50 rounded-[2.5rem] mb-8 bg-slate-50/50">
-        <BrandLogo className="w-20 h-20 mx-auto mb-4" hasError={logoError} onError={onLogoError} />
-        <h3 className="font-black text-2xl tracking-tighter text-blue-800 uppercase">{APP_NAME}</h3>
-        <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] mb-6">Recibo Oficial de Pago</p>
-        <div className="space-y-3 text-left text-xs mb-8">
-          <div className="flex justify-between border-b border-slate-100 pb-1">
-            <span className="text-slate-400 font-bold uppercase text-[9px]">ID Transacción</span>
-            <span className="font-mono font-black text-blue-800">{tx.id}</span>
-          </div>
-          <div className="flex justify-between border-b border-slate-100 pb-1">
-            <span className="text-slate-400 font-bold uppercase text-[9px]">Fecha</span>
-            <span className="font-bold">{tx.date}</span>
-          </div>
-          <div className="py-4">
-            <p className="text-[9px] font-black uppercase text-blue-600 mb-1">Matriculado</p>
-            <p className="font-black text-xl text-slate-800 leading-none">{tx.student}</p>
-          </div>
-          <div className="bg-blue-800 p-5 rounded-3xl flex justify-between items-center shadow-lg shadow-blue-100">
-            <span className="font-black text-blue-200 text-[10px] uppercase">Abonado</span>
-            <span className="text-2xl font-black text-white">$ {tx.amount.toLocaleString('es-CO')}</span>
-          </div>
-        </div>
-        <p className="text-[8px] text-slate-300 font-black uppercase tracking-widest">Documento digital válido para trámites internos</p>
-      </div>
-      <div className="space-y-3 no-print">
-        <button onClick={() => window.print()} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-3 active:scale-95 transition-all text-xs uppercase tracking-widest">
-          <Printer size={18} /> Imprimir
-        </button>
-        <button onClick={onClose} className="w-full py-2 text-slate-400 font-black hover:text-slate-600 text-[10px] uppercase tracking-widest">Finalizar</button>
-      </div>
-    </div>
-  </div>
-);
-
-// ── Payment Panel ────────────────────────────────────────────────────────────
-const Payments = ({ students, setStudents, courses, setTransactions, setLastTx, setShowTicket }) => {
-  const [search, setSearch] = useState('');
-  const overdue = useMemo(() => students.filter(s => s.status !== 'Al día'), [students]);
-  const filtered = useMemo(() => overdue.filter(s => s.name.toLowerCase().includes(search.toLowerCase())), [overdue, search]);
-
-  const handleRenew = (studentId) => {
-    const student = students.find(s => s.id === studentId);
-    const course = courses.find(c => c.id === student.courseId);
-    const amount = (course?.price || 1000000) / 4;
-    setStudents(prev => prev.map(s => s.id === studentId
-      ? { ...s, status: 'Al día', dueDate: new Date(Date.now() + 30 * 864e5).toISOString().split('T')[0], isRenewed: true }
-      : s));
-    const tx = { id: `REN-${Math.floor(Math.random() * 90000) + 10000}`, date: new Date().toISOString(), student: student.name, course: course?.name || 'Curso General', method: 'Efectivo/Sistema', amount, balance: 0 };
-    setTransactions(prev => [tx, ...prev]);
-    setLastTx(tx);
-    setShowTicket(true);
-  };
-
-  return (
-    <div className="space-y-6 animate-in slide-in-from-bottom duration-300">
-      <div className="bg-blue-900 text-white p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-blue-100">
-        <div className="flex items-center gap-6">
-          <AlertCircle size={40} className="text-blue-300 shrink-0" />
-          <div>
-            <h4 className="font-black text-xl uppercase">Cobros Pendientes</h4>
-            <p className="opacity-70 text-sm font-medium">Hay {overdue.length} renovaciones pendientes.</p>
-          </div>
-        </div>
-        <div className="relative w-full md:w-80 shrink-0">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300" size={18} />
-          <input type="text" placeholder="Buscar estudiante..." value={search} onChange={e => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 bg-blue-800/50 border border-blue-700 rounded-2xl text-white placeholder-blue-300/70 outline-none focus:ring-2 focus:ring-blue-400 font-bold text-sm" />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4">
-        {filtered.length === 0 && (
-          <div className="bg-white p-8 md:p-12 rounded-[2.5rem] border border-slate-100 text-center">
-            <p className="text-slate-400 font-bold">No se encontraron estudiantes pendientes.</p>
-          </div>
-        )}
-        {filtered.map(s => (
-          <div key={s.id} className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row justify-between items-center group hover:border-blue-200 transition-all">
-            <div className="flex items-center gap-6">
-              <div className="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center font-black text-blue-700 text-2xl border border-slate-100 group-hover:bg-blue-700 group-hover:text-white transition-all">
-                {s.name.charAt(0)}
-              </div>
-              <div>
-                <h4 className="font-black text-xl text-slate-800">{s.name}</h4>
-                <p className="text-xs text-slate-400 font-bold uppercase">{courses.find(c => c.id === s.courseId)?.name}</p>
-                {s.phone && <p className="text-[10px] text-blue-600 font-black mt-1 flex items-center gap-1"><Phone size={10} /> {s.phone}</p>}
-              </div>
-            </div>
-            <div className="flex items-center gap-8 mt-4 md:mt-0">
-              <div className="text-right">
-                <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">Vencimiento</p>
-                <p className="font-mono text-red-600 font-black text-lg">{s.dueDate}</p>
-              </div>
-              <button onClick={() => handleRenew(s.id)}
-                className="bg-blue-700 hover:bg-blue-800 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-blue-100">
-                Procesar Pago
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// ── Dashboard ────────────────────────────────────────────────────────────────
-const Dashboard = ({ courses, students, transactions, setActiveTab, setShowRevenue }) => {
-  const totalRevenue = useMemo(() => transactions.reduce((s, t) => s + t.amount, 0), [transactions]);
-  const overdue = useMemo(() => students.filter(s => s.status !== 'Al día').length, [students]);
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div onClick={() => setShowRevenue(true)}
-          className="bg-white p-6 md:p-7 rounded-[2rem] shadow-sm border border-slate-100 cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Recaudo Total</p>
-              <h3 className="text-4xl font-black text-blue-700 mt-1">$ {totalRevenue.toLocaleString('es-CO')}</h3>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              <ChevronRight size={16} />
-            </div>
-          </div>
-          <div className="text-[10px] font-bold text-blue-600 mt-4 flex items-center gap-1">Ver desglose <ChevronRight size={12} /></div>
-        </div>
-        <div className="bg-white p-6 md:p-7 rounded-[2rem] shadow-sm border border-slate-100">
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Estudiantes Activos</p>
-          <h3 className="text-4xl font-black text-slate-800 mt-1">{students.length}</h3>
-        </div>
-        <div className="bg-white p-6 md:p-7 rounded-[2rem] shadow-sm border border-slate-100">
-          <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Alertas de Pago</p>
-          <h3 className="text-4xl font-black text-red-500 mt-1">{overdue}</h3>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-          <h3 className="font-black text-lg mb-8 text-slate-700 flex items-center gap-2">
-            <TrendingUp className="text-blue-600" size={20} /> OCUPACIÓN POR PROGRAMA
-          </h3>
-          <div className="space-y-6">
-            {courses.map(c => {
-              const enrolled = students.filter(s => s.courseId === c.id).length;
-              return (
-                <div key={c.id}>
-                  <div className="flex justify-between text-[10px] font-black uppercase text-slate-400 mb-2">
-                    <span>{c.name}</span>
-                    <span className="text-blue-700">{enrolled} Inscritos</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-3 rounded-full overflow-hidden">
-                    <div className={`h-full transition-all duration-1000 ${c.color}`} style={{ width: `${Math.min((enrolled / c.spots) * 100, 100)}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div className="bg-blue-800 rounded-[2.5rem] p-6 md:p-10 text-white relative overflow-hidden shadow-2xl shadow-blue-200 flex flex-col justify-center">
-          <div className="relative z-10">
-            <h3 className="text-3xl font-black mb-4 leading-tight">Módulo de Reportes<br />Institucionales</h3>
-            <p className="opacity-70 text-sm mb-8 max-w-xs font-medium italic">Acceso restringido para personal administrativo del CONADEH.</p>
-            <button onClick={() => setActiveTab('reports')} className="bg-white text-blue-800 px-8 py-3.5 rounded-2xl font-black text-sm hover:scale-105 transition-all">
-              Ir a Reportes
-            </button>
-          </div>
-          <FileText className="absolute -bottom-10 -right-10 w-64 h-64 opacity-5 rotate-12" />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ── Revenue Modal ────────────────────────────────────────────────────────────
-const RevenueModal = ({ transactions, onClose }) => {
-  const totalRevenue = useMemo(() => transactions.reduce((s, t) => s + t.amount, 0), [transactions]);
-  const byCoure = useMemo(() => {
-    const map = {};
-    transactions.forEach(t => { map[t.course] = (map[t.course] || 0) + t.amount; });
-    return Object.entries(map).map(([name, total]) => ({ name, total })).sort((a, b) => b.total - a.total);
-  }, [transactions]);
-
-  return (
-    <div className="fixed inset-0 bg-blue-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-[3rem] w-full max-w-4xl shadow-2xl p-6 lg:p-10 animate-in zoom-in duration-200 relative max-h-[90vh] flex flex-col">
-        <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500 rounded-t-[3rem]" />
-        <div className="flex justify-between items-center mb-8 shrink-0">
-          <div>
-            <h2 className="text-3xl font-black text-slate-800 tracking-tighter">Detalle de Ingresos</h2>
-            <p className="text-slate-400 font-bold uppercase text-xs tracking-widest mt-1">Total: <span className="text-blue-700">$ {totalRevenue.toLocaleString('es-CO')}</span></p>
-          </div>
-          <button onClick={onClose} className="bg-slate-50 p-3 rounded-2xl text-slate-400 hover:bg-slate-100 transition-colors"><X /></button>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-y-auto pr-2 pb-4">
-          <div className="lg:col-span-1 space-y-4">
-            <h3 className="font-black text-sm uppercase text-slate-400 tracking-widest border-b border-slate-100 pb-2">Por Programa</h3>
-            {byCoure.map((item, i) => (
-              <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                <p className="text-xs font-bold text-slate-600 mb-1 leading-tight">{item.name}</p>
-                <p className="text-xl font-black text-blue-800">$ {item.total.toLocaleString('es-CO')}</p>
-              </div>
-            ))}
-          </div>
-          <div className="lg:col-span-2">
-            <h3 className="font-black text-sm uppercase text-slate-400 tracking-widest border-b border-slate-100 pb-2 mb-4">Transacciones</h3>
-            <div className="space-y-3">
-              {transactions.map(tx => (
-                <div key={tx.id} className="flex justify-between items-center p-4 bg-white border border-slate-100 rounded-2xl">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600"><DollarSign size={18} /></div>
-                    <div>
-                      <p className="font-black text-sm text-slate-800">{tx.student}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">{tx.course}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-black text-lg text-emerald-600">+$ {tx.amount.toLocaleString('es-CO')}</p>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase">{tx.method} • {tx.date.split(',')[0]}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ── App ──────────────────────────────────────────────────────────────────────
 const App = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [courses, setCourses] = useState(INITIAL_COURSES);
-  const [students, setStudents] = useState(INITIAL_STUDENTS);
-  const [transactions, setTransactions] = useState(INITIAL_TRANSACTIONS);
-  const [showRevenue, setShowRevenue] = useState(false);
-  const [showRegistration, setShowRegistration] = useState(false);
-  const [showTicket, setShowTicket] = useState(false);
-  const [lastTx, setLastTx] = useState(null);
-  const [logoError, setLogoError] = useState(false);
+  const [courses, setCourses] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const totalOverdue = useMemo(() => students.filter(s => s.status !== 'Al día').length, [students]);
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const [ { data: c }, { data: s }, { data: t } ] = await Promise.all([
+        supabase.from('courses').select('*'),
+        supabase.from('students').select('*'),
+        supabase.from('transactions').select('*')
+      ]);
+      if (c) setCourses(c);
+      if (s) setStudents(s);
+      if (t) setTransactions(t);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
+  const [showRegModal, setShowRegModal] = useState(false);
+  const [imgError, setImgError] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
-  const handleRegistrationSuccess = (newStudent, newTx, courseId) => {
-    setStudents(prev => [newStudent, ...prev]);
-    setCourses(prev => prev.map(c => c.id === courseId ? { ...c, students: c.students + 1 } : c));
-    setTransactions(prev => [newTx, ...prev]);
-    setLastTx(newTx);
-    setShowRegistration(false);
-    setShowTicket(true);
+  const stats = useMemo(() => {
+    const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
+    const activePrograms = courses.length;
+    const totalStudents = students.length;
+    return { totalRevenue, activePrograms, totalStudents };
+  }, [transactions, courses, students]);
+
+  const handleRegistration = async (newStudent, newTransaction) => {
+    // Inserta alumno
+    const { data: stData } = await supabase.from('students').insert([newStudent]).select();
+    if (stData && stData.length > 0) {
+      setStudents(prev => [...prev, stData[0]]);
+    }
+    
+    // Inserta transacción
+    const { data: txData } = await supabase.from('transactions').insert([newTransaction]).select();
+    if (txData && txData.length > 0) {
+      setTransactions(prev => [...prev, txData[0]]);
+    }
+    
+    setShowRegModal(false);
   };
 
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
-    { id: 'courses', label: 'Programas', Icon: BookOpen },
-    { id: 'students', label: 'Estudiantes', Icon: Users },
-    { id: 'payments', label: 'Pagos', Icon: CalendarClock, count: totalOverdue },
-    { id: 'reports', label: 'Reportes', Icon: FileText },
-  ];
-
-  const PAGE_TITLES = {
-    dashboard: 'Panel de Control',
-    courses: 'Gestión Académica',
-    students: 'Directorio de Alumnos',
-    payments: 'Control de Ingresos',
-    reports: 'Inteligencia Institucional',
+  const handleCloseDay = async (date) => {
+    // Busca las que inician con la fecha
+    const toClose = transactions.filter(t => t.date.startsWith(date));
+    if (toClose.length > 0) {
+      const ids = toClose.map(t => t.id);
+      await supabase.from('transactions').update({ isClosed: true }).in('id', ids);
+      setTransactions(prev => prev.map(t => ids.includes(t.id) ? { ...t, isClosed: true } : t));
+    }
   };
+
+  const handleRenewal = async (student, amount, method) => {
+    const course = courses.find(c => c.id === student.courseId);
+    const newTransaction = {
+      id: `TX-${Date.now()}`,
+      date: new Date().toISOString(),
+      student: student.name,
+      course: course?.name || 'N/A',
+      method,
+      amount,
+      type: 'Ingreso',
+      isClosed: false,
+    };
+    const { data: txData } = await supabase.from('transactions').insert([newTransaction]).select();
+    if (txData && txData.length > 0) {
+      setTransactions(prev => [...prev, txData[0]]);
+    }
+  };
+
+  const NavItem = ({ id, label, icon: Icon }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={`flex flex-col md:flex-row items-center gap-3 px-6 py-4 rounded-[2rem] transition-all duration-500 group relative ${activeTab === id
+          ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105'
+          : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary'
+        }`}
+    >
+      <Icon size={activeTab === id ? 22 : 18} className={`transition-all ${activeTab === id ? 'scale-110' : 'group-hover:rotate-12'}`} />
+      <span className="text-[10px] font-black uppercase tracking-[0.2em]">{label}</span>
+      {activeTab === id && (
+        <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full md:hidden" />
+      )}
+    </button>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200 hidden lg:flex flex-col fixed h-full z-30">
-        <div className="p-8 border-b border-slate-50 flex flex-col items-center">
-          <BrandLogo className="w-20 h-20 mb-3" hasError={logoError} onError={() => setLogoError(true)} />
-          <span className="text-3xl font-black tracking-tighter text-blue-800">{APP_NAME}</span>
-        </div>
-        <nav className="flex-1 p-4 space-y-1 mt-4">
-          {navItems.map(item => (
-            <button key={item.id} onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl transition-all ${activeTab === item.id ? 'bg-blue-700 text-white shadow-lg shadow-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}>
-              <div className="flex items-center space-x-3">
-                <item.Icon size={20} strokeWidth={activeTab === item.id ? 2.5 : 2} />
-                <span className="font-bold text-sm">{item.label}</span>
-              </div>
-              {item.count > 0 && (
-                <span className={`${activeTab === item.id ? 'bg-white text-blue-700' : 'bg-red-500 text-white'} text-[10px] font-black px-2 py-1 rounded-full`}>
-                  {item.count}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-        <div className="p-6 border-t border-slate-100 mt-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-black">AD</div>
+    <div className={`min-h-screen ${darkMode ? 'dark' : ''} transition-colors duration-500`}>
+      <div className="min-h-screen bg-bg-main dark:bg-bg-main text-slate-800 dark:text-text-main flex flex-col md:flex-row font-sans selection:bg-primary/30">
+
+        {/* Sidebar Navigation */}
+        <aside className="w-full md:w-80 bg-white dark:bg-bg-card border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 p-8 flex flex-col z-40 transition-colors duration-500">
+          <div className="flex flex-col items-center text-center gap-4 mb-16">
+            <div className="w-24 h-24 bg-primary/5 rounded-[2rem] flex items-center justify-center border border-primary/10 overflow-hidden group shadow-md transition-all">
+              <BrandLogo className="w-16 h-16 group-hover:scale-110 transition-transform" onError={() => setImgError(true)} hasError={imgError} />
+            </div>
             <div>
-              <p className="text-xs font-black text-slate-700">Administrador</p>
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Sistema Educativo</p>
+              <h1 className="text-4xl font-black tracking-tighter text-primary-dark dark:text-white leading-none">{APP_NAME}</h1>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Admin Panel v2.0</p>
             </div>
           </div>
-        </div>
-      </aside>
 
-      {/* Main */}
-      <main className="flex-1 lg:ml-64 overflow-y-auto min-h-screen pb-24 lg:pb-8">
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between sticky top-0 z-20">
-          <h1 className="text-xl font-black text-slate-800 uppercase tracking-tight truncate mr-2">{PAGE_TITLES[activeTab]}</h1>
-          <button onClick={() => setShowRegistration(true)}
-            className="bg-blue-800 hover:bg-blue-900 text-white px-4 md:px-6 py-2.5 rounded-xl flex items-center space-x-2 transition-all shadow-xl shadow-blue-100 font-bold text-sm shrink-0">
-            <PlusCircle size={18} />
-            <span className="hidden sm:inline">Nueva Matrícula</span>
-            <span className="sm:hidden">Nuevo</span>
-          </button>
-        </header>
+          <nav className="flex flex-row md:flex-col gap-2 md:gap-4 flex-1">
+            <NavItem id="dashboard" label="Métricas" icon={LayoutDashboard} />
+            <NavItem id="students" label="Alumnos" icon={Users} />
+            <NavItem id="courses" label="Cursos" icon={BookOpen} />
+            <NavItem id="reports" label="Finanzas" icon={CalendarClock} />
+          </nav>
 
-        <div className="p-4 md:p-8 max-w-7xl mx-auto">
-          {activeTab === 'dashboard' && (
-            <Dashboard courses={courses} students={students} transactions={transactions}
-              setActiveTab={setActiveTab} setShowRevenue={setShowRevenue} />
-          )}
-          {activeTab === 'courses' && (
-            <Courses courses={courses} setCourses={setCourses} students={students} />
-          )}
-          {activeTab === 'students' && (
-            <Students students={students} setStudents={setStudents} courses={courses} />
-          )}
-          {activeTab === 'payments' && (
-            <Payments students={students} setStudents={setStudents} courses={courses}
-              setTransactions={setTransactions} setLastTx={setLastTx} setShowTicket={setShowTicket} />
-          )}
-          {activeTab === 'reports' && (
-            <Reports transactions={transactions} students={students} courses={courses} />
-          )}
-        </div>
-      </main>
+          <div className="mt-auto hidden md:block pt-8 border-t border-slate-50 dark:border-slate-800">
+            <div className="p-6 bg-primary/5 dark:bg-primary/10 rounded-[2.5rem] border border-primary/10 relative overflow-hidden group">
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <ShieldCheck size={80} className="text-primary" />
+              </div>
+              <p className="text-[8px] font-black text-primary uppercase tracking-widest mb-2">Sistema Seguro</p>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Servidor Online</span>
+              </div>
+            </div>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="mt-4 w-full p-4 rounded-2xl flex items-center justify-center gap-3 border border-slate-100 dark:border-slate-800 text-slate-400 hover:text-primary transition-all"
+            >
+              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+              <span className="text-[10px] font-black uppercase tracking-widest">{darkMode ? 'Modo Claro' : 'Modo Oscuro'}</span>
+            </button>
+          </div>
+        </aside>
 
-      {/* Modals */}
-      {showRevenue && <RevenueModal transactions={transactions} onClose={() => setShowRevenue(false)} />}
-      {showRegistration && (
-        <RegistrationModal courses={courses} onClose={() => setShowRegistration(false)} onSuccess={handleRegistrationSuccess} />
-      )}
-      {showTicket && lastTx && (
-        <TicketModal tx={lastTx} onClose={() => setShowTicket(false)} logoError={logoError} onLogoError={() => setLogoError(true)} />
-      )}
+        {/* Main Content Area */}
+        <main className="flex-1 p-8 md:p-14 lg:p-20 overflow-y-auto max-h-screen">
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 flex justify-around items-center h-20 px-2 z-40 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        {navItems.map(item => (
-          <button key={item.id} onClick={() => setActiveTab(item.id)}
-            className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${activeTab === item.id ? 'text-blue-700' : 'text-slate-400'}`}>
-            <div className="relative">
-              <item.Icon size={24} strokeWidth={activeTab === item.id ? 2.5 : 2} />
-              {item.count > 0 && (
-                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full border-2 border-white">
-                  {item.count}
-                </span>
+          <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+            <div className="animate-in fade-in slide-in-from-left duration-700">
+              <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase whitespace-pre-line leading-[0.9]">
+                {activeTab === 'dashboard' ? 'Panel de\nControl' : activeTab === 'students' ? 'Gestión de\nAlumnos' : activeTab === 'courses' ? 'Gestión de\nCursos' : 'Reportes y\nCierres'}
+              </h2>
+              <div className="mt-4 flex items-center gap-3">
+                <div className="h-[3px] w-20 bg-primary" />
+                <p className="text-slate-400 dark:text-slate-500 text-xs font-bold">Resumen institucional en tiempo real.</p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-right duration-700">
+              {activeTab === 'dashboard' && (
+                <button
+                  onClick={() => setShowRegModal(true)}
+                  className="bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-[2.5rem] flex items-center gap-3 transition-all hover:-translate-y-1 shadow-2xl shadow-primary/20 font-black text-xs uppercase tracking-widest"
+                >
+                  <PlusCircle size={20} /> Nueva Inscripción
+                </button>
+              )}
+              {activeTab === 'reports' && (
+                <button onClick={() => window.print()} className="p-4 bg-white dark:bg-bg-card rounded-2xl text-slate-400 hover:text-primary transition-all shadow-sm border border-slate-100 dark:border-slate-800">
+                  <Printer size={20} />
+                </button>
               )}
             </div>
-            <span className="text-[10px] font-bold">{item.label}</span>
-          </button>
-        ))}
-      </nav>
+          </header>
 
-      <style>{`
-        @media print {
-          .no-print, aside, header, button { display: none !important; }
-          body { background: white !important; }
-          .lg\\:ml-64 { margin-left: 0 !important; }
-          #printable-ticket { border: 1px solid #eee !important; width: 100% !important; margin: 0 !important; box-shadow: none !important; background: white !important; }
-          main { padding: 0 !important; margin: 0 !important; }
-        }
-      `}</style>
+          {activeTab === 'dashboard' && (
+            <div className="space-y-12 animate-in fade-in duration-500">
+              {/* Quick KPI Row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="bg-white dark:bg-bg-card p-10 rounded-[3.5rem] border border-slate-100 dark:border-slate-800 shadow-sm relative overflow-hidden group transition-colors duration-500">
+                  <div className="relative z-10">
+                    <p className="text-primary text-[10px] font-black uppercase tracking-widest mb-4">Recaudación Total</p>
+                    <h3 className="text-4xl font-black text-slate-800 dark:text-text-main tracking-tighter mb-2">$ {stats.totalRevenue.toLocaleString('es-CO')}</h3>
+                    <div className="flex items-center gap-2 text-emerald-500 text-[10px] font-black uppercase">
+                      <TrendingUp size={12} /> +12% vs mes anterior
+                    </div>
+                  </div>
+                  <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-110 transition-transform">
+                    <DollarSign size={100} className="text-primary" />
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-bg-card p-10 rounded-[3.5rem] border border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-500">
+                  <p className="text-emerald-500 text-[10px] font-black uppercase tracking-widest mb-4">Alumnos Activos</p>
+                  <h3 className="text-4xl font-black text-slate-800 dark:text-text-main tracking-tighter mb-2">{stats.totalStudents}</h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest italic">Registrados globalmente</p>
+                </div>
+
+                <div className="bg-white dark:bg-bg-card p-10 rounded-[3.5rem] border border-slate-100 dark:border-slate-800 shadow-sm transition-colors duration-500">
+                  <p className="text-amber-500 text-[10px] font-black uppercase tracking-widest mb-4">Cursos Disponibles</p>
+                  <h3 className="text-4xl font-black text-slate-800 dark:text-text-main tracking-tighter mb-2">{stats.activePrograms}</h3>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest italic">Cursos vigentes</p>
+                </div>
+              </div>
+
+              {/* Big Welcome / Info Card */}
+              <div className="bg-slate-900 dark:bg-bg-card p-12 md:p-16 rounded-[4rem] text-white relative overflow-hidden shadow-2xl transition-colors duration-500">
+                <div className="absolute right-0 top-0 w-1/2 h-full bg-gradient-to-l from-primary/20 to-transparent pointer-events-none" />
+                <div className="relative z-10 max-w-2xl">
+                  <span className="px-5 py-2 bg-primary rounded-full text-[10px] font-black uppercase tracking-widest mb-8 inline-block">Actualización Sistema</span>
+                  <h3 className="text-5xl font-black tracking-tighter mb-6 leading-none">Optimice la gestión educativa de su institución.</h3>
+                  <p className="text-slate-400 font-bold text-lg mb-10 leading-relaxed">Acceda a métricas detalladas, procese inscripciones rápidamente y controle el flujo financiero con nuestra nueva interfaz premium.</p>
+                  <div className="flex flex-wrap gap-6">
+                    <button
+                      onClick={() => setActiveTab('students')}
+                      className="bg-white text-slate-900 px-10 py-5 rounded-[2rem] font-black uppercase text-xs tracking-widest hover:bg-primary hover:text-white transition-all flex items-center gap-3"
+                    >
+                      Gestionar Alumnos <ChevronRight size={18} />
+                    </button>
+                    <div className="flex items-center gap-4 px-6 border-l-2 border-slate-700">
+                      <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center">
+                        <ShieldCheck className="text-primary" size={24} />
+                      </div>
+                      <p className="text-xs font-bold text-slate-400">Protección de Datos <br /> Cifrada (AES-256)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'students' && <Students students={students} setStudents={setStudents} courses={courses} onRenew={handleRenewal} />}
+          {activeTab === 'courses' && <Courses courses={courses} setCourses={setCourses} students={students} />}
+          {activeTab === 'reports' && <Reports transactions={transactions} students={students} courses={courses} onCloseDay={handleCloseDay} />}
+        </main>
+      </div>
+
+      {showRegModal && (
+        <RegistrationModal
+          courses={courses}
+          onClose={() => setShowRegModal(false)}
+          onSuccess={handleRegistration}
+        />
+      )}
     </div>
   );
 };
