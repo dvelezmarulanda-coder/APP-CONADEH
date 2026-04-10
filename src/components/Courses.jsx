@@ -228,7 +228,7 @@ const Courses = ({ courses, setCourses, students }) => {
     <>
       <div className="animate-in slide-in-from-right duration-300">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-black text-slate-800 dark:text-text-main tracking-tighter">Cursos Disponibles</h2>
+          <h2 className="text-2xl font-black text-white tracking-tighter">Cursos Disponibles</h2>
           <button
             onClick={() => setShowAdd(true)}
             className="bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-xl flex items-center space-x-2 transition-all shadow-lg shadow-primary/20 dark:shadow-none font-bold text-sm"
