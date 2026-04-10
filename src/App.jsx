@@ -104,6 +104,26 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
             </select>
           </div>
 
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-3">Método de Pago</label>
+            <div className="grid grid-cols-2 gap-3">
+              {['Efectivo', 'Transferencia'].map(m => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setForm({ ...form, method: m })}
+                  className={`py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+                    form.method === m 
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                    : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {selectedCourse && (
             <div className="bg-primary/5 dark:bg-primary/10 p-6 rounded-3xl border border-primary/10 animate-in slide-in-from-top-4 duration-300">
               <div className="flex justify-between items-center mb-4">
