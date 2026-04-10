@@ -54,7 +54,7 @@ const POSReceipt = ({ data }) => {
 
 // 📝 Registration Modal 📝
 const RegistrationModal = ({ courses, onClose, onSuccess }) => {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', courseId: '', method: 'Efectivo', amount: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', courseId: '', method: 'Efectivo', type: 'Matrícula', amount: '' });
   const selectedCourse = useMemo(() => courses.find(c => c.id === parseInt(form.courseId)), [courses, form.courseId]);
 
   const handleSubmit = (e) => {
@@ -76,14 +76,14 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     };
 
-    const newTransaction = {
+      const newTransaction = {
       id: generateId(),
       date: new Date().toISOString(),
       student: form.name,
       course: selectedCourse.name,
       method: form.method,
       amount: amountNum,
-      type: 'Inscripción',
+      type: form.type,
       isClosed: false
     };
 
@@ -132,6 +132,26 @@ const RegistrationModal = ({ courses, onClose, onSuccess }) => {
               <option value="">Selecciona un curso</option>
               {courses.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-3">Concepto de Pago</label>
+            <div className="grid grid-cols-2 gap-3">
+              {['Matrícula', 'Mensualidad'].map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setForm({ ...form, type: t })}
+                  className={`py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${
+                    form.type === t 
+                    ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                    : 'bg-slate-50 dark:bg-slate-800/50 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">
