@@ -3,7 +3,7 @@ import { BookOpen, PlusCircle, Pencil, Trash2, X, CheckCircle2 } from 'lucide-re
 import { supabase } from '../supabaseClient';
 
 const COLORS = ['bg-blue-600', 'bg-emerald-600', 'bg-violet-600', 'bg-amber-600', 'bg-rose-600', 'bg-cyan-600'];
-const LOCATIONS = ['Sede Central', 'Sede Regional', 'Virtual'];
+const LOCATIONS = ['Sede Salesianos', 'Sede Albernia'];
 
 // 📔 Edit Course Modal 📔
 const EditCourseModal = ({ course, onSave, onClose }) => {
@@ -115,7 +115,7 @@ const DeleteCourseConfirm = ({ course, studentCount, onConfirm, onClose }) => (
 
 // ➕ Add Course Modal ➕
 const AddCourseModal = ({ onSave, onClose }) => {
-  const [form, setForm] = useState({ name: '', teacher: '', location: 'Sede Central', spots: '', weeks: '', registrationFee: '', monthlyFee: '' });
+  const [form, setForm] = useState({ name: '', teacher: '', location: 'Sede Salesianos', spots: '', weeks: '', registrationFee: '', monthlyFee: '' });
 
   const handleSubmit = (e) => {
     e.preventDefault();
