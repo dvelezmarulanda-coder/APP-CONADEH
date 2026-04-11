@@ -288,8 +288,8 @@ const App = () => {
   const NavItem = ({ id, label, icon: Icon }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex flex-col md:flex-row items-center gap-3 px-6 py-4 rounded-[2rem] transition-all duration-500 group relative ${activeTab === id
-          ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105'
+      className={`shrink-0 snap-center flex flex-col md:flex-row items-center gap-2 md:gap-3 px-5 md:px-6 py-3 md:py-4 rounded-3xl md:rounded-[2rem] transition-all duration-500 group relative ${activeTab === id
+          ? 'bg-primary text-white shadow-2xl shadow-primary/30 scale-105 md:scale-105'
           : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary'
         }`}
     >
@@ -304,21 +304,21 @@ const App = () => {
   return (
     <div className={`min-h-screen ${darkMode ? 'dark' : ''} transition-colors duration-500`}>
       <POSReceipt data={latestTx} />
-      <div className="min-h-screen bg-bg-main dark:bg-bg-main text-slate-800 dark:text-text-main flex flex-col md:flex-row font-sans selection:bg-primary/30 print:hidden">
+      <div className="min-h-screen bg-bg-main dark:bg-bg-main text-slate-800 dark:text-text-main flex flex-col md:flex-row font-sans selection:bg-primary/30 print:hidden overflow-x-hidden">
 
         {/* Sidebar Navigation */}
-        <aside className="w-full md:w-80 bg-white dark:bg-bg-card border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 p-8 flex flex-col z-40 transition-colors duration-500">
-          <div className="flex flex-col items-center text-center gap-4 mb-16">
-            <div className="w-24 h-24 bg-primary/5 rounded-[2rem] flex items-center justify-center border border-primary/10 overflow-hidden group shadow-md transition-all">
-              <BrandLogo className="w-16 h-16 group-hover:scale-110 transition-transform" onError={() => setImgError(true)} hasError={imgError} />
+        <aside className="shrink-0 w-full md:w-80 bg-white dark:bg-bg-card border-b rounded-b-[2rem] md:rounded-b-none md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 p-6 md:p-8 flex flex-col z-40 transition-colors duration-500 shadow-xl md:shadow-none relative">
+          <div className="flex flex-col items-center text-center gap-3 md:gap-4 mb-8 md:mb-16 mt-2 md:mt-0">
+            <div className="w-16 h-16 md:w-24 md:h-24 bg-primary/5 rounded-2xl md:rounded-[2rem] flex items-center justify-center border border-primary/10 overflow-hidden group shadow-md transition-all">
+              <BrandLogo className="w-10 h-10 md:w-16 md:h-16 group-hover:scale-110 transition-transform" onError={() => setImgError(true)} hasError={imgError} />
             </div>
             <div>
-              <h1 className="text-4xl font-black tracking-tighter text-primary-dark dark:text-white leading-none">{APP_NAME}</h1>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-primary-dark dark:text-white leading-none">{APP_NAME}</h1>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Admin Panel v2.0</p>
             </div>
           </div>
 
-          <nav className="flex flex-row md:flex-col gap-2 md:gap-4 flex-1">
+          <nav className="flex flex-row md:flex-col gap-3 md:gap-4 flex-1 overflow-x-auto custom-scrollbar snap-x w-full px-2 md:px-0">
             <NavItem id="dashboard" label="Métricas" icon={LayoutDashboard} />
             <NavItem id="students" label="Alumnos" icon={Users} />
             <NavItem id="courses" label="Cursos" icon={BookOpen} />
@@ -347,11 +347,11 @@ const App = () => {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-8 md:p-14 lg:p-20 overflow-y-auto max-h-screen">
+        <main className="flex-1 p-6 md:p-14 lg:p-20 overflow-y-auto md:max-h-screen w-full relative z-10 pt-10 md:pt-14">
 
-          <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-16">
+          <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 md:gap-8 mb-10 md:mb-16">
             <div className="animate-in fade-in slide-in-from-left duration-700">
-              <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase whitespace-pre-line leading-[0.9]">
+              <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase whitespace-pre-line leading-[1] md:leading-[0.9]">
                 {activeTab === 'dashboard' ? 'Panel de\nControl' : activeTab === 'students' ? 'Gestión de\nAlumnos' : activeTab === 'courses' ? 'Gestión de\nCursos' : 'Reportes y\nCierres'}
               </h2>
               <div className="mt-4 flex items-center gap-3">
